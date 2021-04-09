@@ -1,0 +1,205 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <meta charset="utf-8" />
+    <title>Sean Hoang - VueJs Assignment</title>
+  </head>
+
+  <body>
+
+    <!-- HTMLJS -->
+    <div id="taskapp">
+      <h1>{{title}}</h1>
+      Filter tasks over
+      <input type="number" v-model="filterInput">
+      priority
+      <br><br>
+      <button @click="filterKey = 'filteredPriority'" :class="{ active: filterKey == 'filteredPriority'}">
+        Enable Filter
+      </button>
+      <button @click="filterKey = 'noFilter'" :class="{ active: filterKey == 'noFilter'}">
+        Disable Filter
+      </button>
+      <br><br>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Task</th>
+            <th @click="orderByPriority">Priority</th>
+            <th @click="orderByTime">Time Stamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="task in userFilter">
+            <td>{{task.taskID}}</td>
+            <td>{{task.taskName}}</td>
+            <td>{{task.taskPriority}}</td>
+            <td>{{task.dateTimeCreated}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <h1>{{addTitle}}</h1>
+      Task Name:
+      <input v-model="taskNameInput">
+      <br><br>
+      Task Priority:
+      <input type="number" min="0" max="10" v-model="taskPriorityInput">
+      <br><br>
+      <button @click="createTask">
+        Submit
+      </button>
+      <br><br>
+      <!--<task-list :taskarray="taskarray" />-->
+      <h1>{{deleteTitle}}</h1>
+      Enter task ID:
+      <input type="number" v-model="deleteTaskInput">
+      <br><br>
+      <button @click="deleteTask">
+        Delete Task
+      </button>
+    </div>
+
+	<!--VUEJS-->
+	<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+	<script>
+
+Vue.component("task-list", {
+  props: ["taskarray"],
+  template: `
+		<table border="1">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Task</th>
+            <th @click="orderByPriority">Priority</th>
+            <th @click="orderByTime">Time Stamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="task in taskarray">
+            <td>{{task.taskID}}</td>
+            <td>{{task.taskName}}</td>
+            <td>{{task.taskPriority}}</td>
+            <td>{{task.dateTimeCreated}}</td>
+          </tr>
+        </tbody>
+      </table>`
+})
+
+new Vue({
+  el: "#taskapp",
+  //components
+  component: [
+    "task-list",
+  ],
+  data: {
+    filterKey: "noFilter",
+    title: "Task Priority List",
+    deleteTitle: "Task Deletion",
+    addTitle: "Create New Task",
+    //data inputs
+    taskNameInput: "",
+    taskPriorityInput: "0",
+    deleteTaskInput: "0",
+    nextTaskID: "2",
+    filterInput: "0",
+    //task array
+    taskarray: [{
+        taskName: "first task",
+        taskPriority: "8",
+        taskID: "0",
+        dateTimeCreated: Date.now()
+      },
+      {
+        taskName: "second task",
+        taskPriority: "5",
+        taskID: "1",
+        dateTimeCreated: Date.now()
+      },
+    ],
+    //Sorting vars
+    sorttasks: [],
+    sortBy: "prio"
+  },
+  methods: {
+    //deleteTask: function(btn) {
+    //  this.taskarray.splice(btn.value, 1);
+    deleteTask: function() {
+      /*this.taskarray.forEach((taskID, index) => {
+    		if (id == this.deleteTaskInput) {
+        	
+        }*/
+      //})
+      var deleteIndex = this.taskarray.findIndex(x => x.taskID === this.deleteTaskInput);
+      this.taskarray.splice(deleteIndex, 1);
+    },
+    orderByPriority: function() {
+      let sortedArray = this.taskarray;
+      sortedArray.sort(function(a, b) {
+        return a.taskPriority - b.taskPriority
+      });
+    },
+    orderByTime: function() {
+      let sortedArray = this.taskarray;
+      sortedArray.sort(function(a, b) {
+        return b.dateTimeCreated - a.dateTimeCreated
+      });
+    },
+    createTask: function() {
+      /*
+      data validation:
+      - 0 to 10
+      - not blank
+      */
+      if (this.taskPriorityInput < 0 || this.taskPriorityInput > 11 || this.taskPriorityInput == "") {
+        return false;
+      }
+      if (this.taskNameInput == "") {
+        return false;
+      }
+      //push task
+      this.taskarray.push({
+          taskName: this.taskNameInput,
+          taskPriority: this.taskPriorityInput,
+          taskID: this.nextTaskID,
+          dateTimeCreated: Date.now()
+        }),
+        //reset input
+        this.taskNameInput = "",
+        this.taskPriorityInput = "0";
+      this.nextTaskID++;
+    }
+  },
+  /*computed: {
+      orderByPriority: function() {
+		let sortedArray = this.taskarray;
+		sortedArray.sort(function(a, b) {
+		return a.taskPriority - b.taskPriority
+		});
+	},
+  orderByTime: function() {
+    let sortedArray = this.taskarray;
+    sortedArray.sort(function(a, b) {
+      return a.dateTimeCreated - b.dateTimeCreated
+    });
+  },
+  */
+  computed: {
+    userFilter() {
+      return this[this.filterKey]
+    },
+    noFilter() {
+      return this.taskarray
+    },
+    filteredPriority() {
+      return this.taskarray.filter((task) => task.taskPriority <= this.filterInput)
+    }
+  }
+})
+
+	</script>
+  </body>
+</html>
